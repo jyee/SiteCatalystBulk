@@ -61,10 +61,17 @@ def main():
   except:
     sys.exit("Could not add data to sessions")
 
-  # Generate session short tracked URLS
+  # Generate tracking code
   try:
-    print "Generating tracked session URLs. Do NOT close Firefox! ..."
-    sessions = sessions_shorturls(sessions, email, password, pa, campaign, cm)
+    print "Generating tracking code. Do NOT close Firefox! ..."
+    tracking_code = sessions_trackedurls(sessions[0], email, password, pa, campaign, cm)
+  except:
+    sys.exit("Could not get short URLS")
+
+  # Generate session short URLS
+  try:
+    print "Generating short URLs. Firefox! ..."
+    sessions = sessions_shorturls(sessions, tracking_code)
   except:
     sys.exit("Could not get short URLS")
 
@@ -160,7 +167,7 @@ def sessions_addinfo(sessions, speakers, conference_url):
   return sessions
 
 # Get short urls
-def sessions_shorturls(sessions, email, password, pa, campaign, cm):
+def sessions_trackedurls(session, email, password, pa, campaign, cm):
   site_catalyst = "http://www.oreilly.com/campaign/"
 
   # Create a new instance of the Firefox driver.
@@ -179,13 +186,8 @@ def sessions_shorturls(sessions, email, password, pa, campaign, cm):
   except:
     sys.exit("Could not log in to code generator")
 
-  session_count = len(sessions)
   for i in xrange(session_count):
     if sessions[i].has_key("url") and sessions[i]["url"]:
-      #Report progress
-      if not i % 10:
-        print str(i) + " of " + str(session_count) + " sessions generated ..."
-
       try:
         # Wait for the page to load.
         WebDriverWait(driver, 10).until(EC.title_is("SiteCatalyst Campaign Code Generator"))
@@ -205,24 +207,21 @@ def sessions_shorturls(sessions, email, password, pa, campaign, cm):
   
         # Wait for the tracking URL result page to load.
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'Generate Shortened URL')]")))
-        driver.find_element_by_xpath("//a[contains(text(), 'Generate Shortened URL')]").click()
-  
-        # Get the Short URL
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), 'http://oreil.ly/')]")))
-        short = driver.find_element_by_xpath("//a[contains(text(), 'http://oreil.ly/')]")
-        shorturl = re.search("http://oreil.ly/\S+", short.text).group()
-        if shorturl:
-          sessions[i]["shorturl"] = shorturl
-  
-        # Generate new code/Reset form
-        driver.find_element_by_link_text("Create New Code").click()
+
+        #Grab the tracking code
+        break
   
       except:
-        print "An error occured while getting the short url for '" + sessions[i]["name"] + "'"
+        print "An error occured while getting the short url for '" + sessions[i]["name"] + "'. Trying another."
  
   #Stop the Selenium driver.
   driver.quit()
 
+  return tracking_code
+
+# Generate short urls
+def sessions_shorturls(sessions, tracking_code):
+  # Loop sessions and send to bitly and save short url to list
   return sessions
 
 # Write session info to CSV
