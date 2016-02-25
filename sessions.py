@@ -27,8 +27,8 @@ def main():
   password = getpass.getpass("ORM password: ")
   
   # Conference info.
-  conference_url = user_input("Conference URL", "conference_url", previous)
-  json_url = clean_url(conference_url) + "public/content/report/schedule"
+  conference_url = clean_url(user_input("Conference URL", "conference_url", previous))
+  json_url = conference_url + "public/content/report/schedule"
 
   # Site Catalyst info.
   pa = user_input("ORM pa", "pa", previous)
