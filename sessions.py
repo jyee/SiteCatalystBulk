@@ -37,7 +37,12 @@ def main():
 
   # Save values
   set_inputs(email, conference_url, pa, campaign, cm)
-  
+
+  # Allow debugging.
+  debug = False
+  if "debug" in sys.argv:
+    debug = True
+
   # Get the json
   try:
     print "Downloading session data ..."
@@ -45,6 +50,8 @@ def main():
     print "Parsing session data ..."
     event_data = json.load(http_response)
   except:
+    if debug:
+      print sys.exc_info()
     sys.exit("Could not retreive session data!")
 
   # Setup speaker dictionary
@@ -52,6 +59,8 @@ def main():
     print "Parsing speaker data ..."
     speakers = speaker_dict(event_data["Schedule"]["speakers"])
   except:
+    if debug:
+      print sys.exc_info()
     sys.exit("Could not load speakers")
 
   # Setup session list
@@ -59,6 +68,8 @@ def main():
     print "Compiling session data ..."
     sessions = sessions_addinfo(event_data["Schedule"]["events"], speakers, conference_url)
   except:
+    if debug:
+      print sys.exc_info()
     sys.exit("Could not add data to sessions")
 
   # Generate session short tracked URLS
@@ -66,6 +77,8 @@ def main():
     print "Generating tracked session URLs. Do NOT close Firefox! ..."
     sessions = sessions_shorturls(sessions, email, password, pa, campaign, cm)
   except:
+    if debug:
+      print sys.exc_info()
     sys.exit("Could not get short URLS")
 
   #Output to CSV
@@ -73,6 +86,8 @@ def main():
     print "Writing data to CSV ..."
     output_sessions(sessions)
   except:
+    if debug:
+      print sys.exc_info()
     sys.exit("Could not write data to file")
 
 
